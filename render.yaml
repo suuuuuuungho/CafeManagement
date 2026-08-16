@@ -20,7 +20,9 @@ services:
         value: HS256
       - key: JWT_EXPIRE_MINUTES
         value: "10080"
-      # GitHub Pages origin(s), comma-separated if more than one
+      # Origin only, no path — e.g. https://<user>.github.io (NOT .../<repo>/).
+      # Browsers send Origin without a path, so CORSMiddleware's exact-match
+      # list won't match if you include one. Comma-separate for more than one.
       - key: CORS_ORIGINS
         sync: false
       - key: DEPOSIT_MATCH_WINDOW_MINUTES

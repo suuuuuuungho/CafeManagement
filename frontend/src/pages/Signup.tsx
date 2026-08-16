@@ -88,7 +88,7 @@ export function Signup() {
           <span className="text-label-caps text-on-surface-variant">업장 URL (영문 소문자/숫자/하이픈)</span>
           <input
             required
-            pattern="[a-z0-9-]{3,40}"
+            pattern="[a-z0-9\-]{3,40}"
             placeholder="hongdae-cafe"
             value={form.venue_slug}
             onChange={(e) => set("venue_slug", e.target.value)}
