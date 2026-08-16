@@ -12,7 +12,12 @@ const COLUMNS: { status: Order["status"]; label: string }[] = [
 ];
 
 function elapsed(iso: string): string {
-  const mins = Math.max(0, Math.floor((Date.now() - new Date(iso + "Z").getTime()) / 60000));
+  // SQLite (local dev) returns naive datetimes with no timezone marker;
+  // Postgres (prod) returns them already suffixed with "Z". Only append
+  // one if it's actually missing, or "...Z" becomes "...ZZ" and fails to parse.
+  const hasTz = /[zZ]|[+-]\d\d:\d\d$/.test(iso);
+  const date = new Date(hasTz ? iso : iso + "Z");
+  const mins = Math.max(0, Math.floor((Date.now() - date.getTime()) / 60000));
   return mins < 1 ? "방금" : `${mins}분 전`;
 }
 
