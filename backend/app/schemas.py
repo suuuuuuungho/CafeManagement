@@ -47,6 +47,7 @@ class VenueOut(BaseModel):
     bank_name: str
     bank_account_no: str
     bank_account_holder: str
+    webhook_secret: str
     is_active: bool
 
     model_config = {"from_attributes": True}

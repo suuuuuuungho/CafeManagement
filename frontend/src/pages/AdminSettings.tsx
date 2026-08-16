@@ -1,7 +1,40 @@
 import { useEffect, useState } from "react";
 import { AdminShell } from "../components/AdminShell";
-import { api, type Venue } from "../lib/api";
+import { API_BASE, api, type Venue } from "../lib/api";
 import { useActiveVenue, venueQuery } from "../lib/activeVenue";
+
+function CopyField({ label, value, mask }: { label: string; value: string; mask?: boolean }) {
+  const [revealed, setRevealed] = useState(!mask);
+  const shown = revealed ? value : "•".repeat(Math.min(value.length, 24));
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-label-caps text-on-surface-variant">{label}</span>
+      <div className="flex items-center gap-2">
+        <code className="text-code-sm font-code-sm bg-surface-container-low rounded-lg px-3 py-2 flex-1 break-all">
+          {shown}
+        </code>
+        {mask && (
+          <button
+            type="button"
+            onClick={() => setRevealed((r) => !r)}
+            className="shrink-0 w-9 h-9 flex items-center justify-center bg-surface-container-low rounded-lg hover:bg-surface-container-high"
+            title={revealed ? "숨기기" : "보기"}
+          >
+            <span className="material-symbols-outlined text-[18px]">{revealed ? "visibility_off" : "visibility"}</span>
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => navigator.clipboard.writeText(value)}
+          className="shrink-0 w-9 h-9 flex items-center justify-center bg-surface-container-low rounded-lg hover:bg-surface-container-high"
+          title="복사"
+        >
+          <span className="material-symbols-outlined text-[18px]">content_copy</span>
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export function AdminSettings() {
   const { venueId } = useActiveVenue();
@@ -41,21 +74,13 @@ export function AdminSettings() {
 
   return (
     <AdminShell title="설정">
-      <div className="max-w-lg bg-surface-container-lowest rounded-xl shadow-sm p-padding-card flex flex-col gap-1 mb-stack-md">
-        <span className="text-label-caps text-on-surface-variant">업장 URL (QR/NFC 링크에 사용됩니다, 가입 시 자동 생성)</span>
-        <div className="flex items-center gap-2">
-          <code className="text-code-sm font-code-sm bg-surface-container-low rounded-lg px-3 py-2 flex-1 break-all">
-            {venue.slug}
-          </code>
-          <button
-            type="button"
-            onClick={() => navigator.clipboard.writeText(venue.slug)}
-            className="shrink-0 w-9 h-9 flex items-center justify-center bg-surface-container-low rounded-lg hover:bg-surface-container-high"
-            title="복사"
-          >
-            <span className="material-symbols-outlined text-[18px]">content_copy</span>
-          </button>
-        </div>
+      <div className="max-w-lg bg-surface-container-lowest rounded-xl shadow-sm p-padding-card flex flex-col gap-stack-md mb-stack-md">
+        <CopyField label="업장 URL (QR/NFC 링크에 사용됩니다, 가입 시 자동 생성)" value={venue.slug} />
+        <CopyField
+          label="입금 자동매칭 웹훅 주소 (폰 자동화 스크립트에 설정)"
+          value={`${API_BASE}/api/webhook/deposit/${venue.slug}`}
+        />
+        <CopyField label="웹훅 시크릿 키 (폰 자동화 스크립트에 설정, 외부에 노출 금지)" value={venue.webhook_secret} mask />
       </div>
 
       <form

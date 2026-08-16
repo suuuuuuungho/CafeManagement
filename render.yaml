@@ -12,6 +12,8 @@ services:
       - key: PYTHON_VERSION
         value: 3.12.7
       # Neon connection string, scheme swapped to postgresql+asyncpg://
+      # Use the DIRECT host (no "-pooler" in it) — see backend/.env.example
+      # for why the pooled one can wedge itself after a schema change.
       - key: DATABASE_URL
         sync: false
       - key: JWT_SECRET

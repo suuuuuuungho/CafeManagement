@@ -70,7 +70,13 @@ class User(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=gen_uuid)
     username: Mapped[str] = mapped_column(String(30), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255))
-    role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.venue_owner)
+    # native_enum=False stores this as VARCHAR instead of a custom Postgres
+    # type — Neon's pooled connection (PgBouncer transaction mode) has a
+    # known issue where custom type OIDs go stale ("cache lookup failed
+    # for type NNNNN"), so plain VARCHAR sidesteps it entirely.
+    role: Mapped[UserRole] = mapped_column(
+        Enum(UserRole, native_enum=False, length=20), default=UserRole.venue_owner
+    )
     venue_id: Mapped[str | None] = mapped_column(ForeignKey("venues.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
@@ -116,12 +122,16 @@ class Order(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=gen_uuid)
     venue_id: Mapped[str] = mapped_column(ForeignKey("venues.id"), index=True)
     table_id: Mapped[str] = mapped_column(ForeignKey("tables.id"))
-    status: Mapped[OrderStatus] = mapped_column(Enum(OrderStatus), default=OrderStatus.payment_pending)
+    status: Mapped[OrderStatus] = mapped_column(
+        Enum(OrderStatus, native_enum=False, length=20), default=OrderStatus.payment_pending
+    )
     subtotal: Mapped[int] = mapped_column(Integer)
     unique_amount: Mapped[int] = mapped_column(Integer, index=True)
     order_seq: Mapped[int] = mapped_column(Integer)
     order_date: Mapped[date] = mapped_column(Date, server_default=func.current_date())
-    confirmed_method: Mapped[ConfirmMethod | None] = mapped_column(Enum(ConfirmMethod), nullable=True)
+    confirmed_method: Mapped[ConfirmMethod | None] = mapped_column(
+        Enum(ConfirmMethod, native_enum=False, length=10), nullable=True
+    )
     confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     # Stays true after status becomes "completed" until the owner taps "수령완료" on
     # the admin page — that's what actually clears the card off the display board.
@@ -155,4 +165,6 @@ class DepositLog(Base):
     raw_text: Mapped[str] = mapped_column(String(500), default="")
     received_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     matched_order_id: Mapped[str | None] = mapped_column(ForeignKey("orders.id"), nullable=True)
-    match_status: Mapped[MatchStatus] = mapped_column(Enum(MatchStatus), default=MatchStatus.unmatched)
+    match_status: Mapped[MatchStatus] = mapped_column(
+        Enum(MatchStatus, native_enum=False, length=20), default=MatchStatus.unmatched
+    )

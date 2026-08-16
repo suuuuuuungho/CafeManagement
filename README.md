@@ -7,6 +7,7 @@ QR/NFC 테이블 주문 + 계좌이체 결제 + 실시간 제조현황을 지원
 
 - `backend/` — FastAPI + SQLAlchemy (async). 로컬은 SQLite, 배포는 Neon(Postgres) 사용.
 - `frontend/` — React + Vite + Tailwind. 3개 페이지: 주문(`/order`), 관리자(`/admin/*`), 제조현황(`/display`).
+- `phone-automation/` — 입금 자동매칭용 Termux 스크립트. 사장님 폰에 직접 설치 필요, `phone-automation/README.md` 참고.
 
 ## 로컬 실행
 
@@ -50,6 +51,6 @@ npm run dev
 
 ## 아직 안 된 것 (Phase 2)
 
-- 입금 자동 대조 웹훅(`/api/webhook/deposit/{slug}`)은 백엔드에 구현되어 있으나, 폰에서 은행 알림을 캡처해 이 웹훅으로 전송하는 Termux/MacroDroid 자동화는 사용자가 직접 설정해야 함.
+- 입금 자동 대조 웹훅(`/api/webhook/deposit/{slug}`)과 폰 자동화 스크립트(`phone-automation/`)는 준비돼 있으나, 사장님 폰에 Termux 설치/설정은 직접 해야 함.
 - NFC 태그 실물 프로그래밍.
 - QR 코드 일괄 생성: `backend/scripts/generate_qr.py` 참고.
