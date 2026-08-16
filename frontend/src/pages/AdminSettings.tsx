@@ -41,6 +41,23 @@ export function AdminSettings() {
 
   return (
     <AdminShell title="설정">
+      <div className="max-w-lg bg-surface-container-lowest rounded-xl shadow-sm p-padding-card flex flex-col gap-1 mb-stack-md">
+        <span className="text-label-caps text-on-surface-variant">업장 URL (QR/NFC 링크에 사용됩니다, 가입 시 자동 생성)</span>
+        <div className="flex items-center gap-2">
+          <code className="text-code-sm font-code-sm bg-surface-container-low rounded-lg px-3 py-2 flex-1 break-all">
+            {venue.slug}
+          </code>
+          <button
+            type="button"
+            onClick={() => navigator.clipboard.writeText(venue.slug)}
+            className="shrink-0 w-9 h-9 flex items-center justify-center bg-surface-container-low rounded-lg hover:bg-surface-container-high"
+            title="복사"
+          >
+            <span className="material-symbols-outlined text-[18px]">content_copy</span>
+          </button>
+        </div>
+      </div>
+
       <form
         onSubmit={save}
         className="max-w-lg bg-surface-container-lowest rounded-xl shadow-sm p-padding-card flex flex-col gap-stack-md"
