@@ -2,12 +2,20 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.constants import KOREAN_BANKS
 from app.database import get_db
 from app.deps import require_super_admin, resolve_venue_id
 from app.models import Venue
 from app.schemas import VenueOut, VenueUpdate
 
 router = APIRouter(prefix="/api/admin", tags=["venues"])
+
+meta_router = APIRouter(prefix="/api/meta", tags=["meta"])
+
+
+@meta_router.get("/banks")
+async def list_banks():
+    return KOREAN_BANKS
 
 
 @router.get("/venues", response_model=list[VenueOut])

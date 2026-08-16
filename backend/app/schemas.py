@@ -1,24 +1,31 @@
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field, field_validator
 
+from app.constants import KOREAN_BANKS
 from app.models import ConfirmMethod, OrderStatus, UserRole
 
 # ---- Auth ----
 
 
 class SignupRequest(BaseModel):
-    email: EmailStr
+    username: str = Field(pattern=r"^[a-zA-Z0-9_]{4,20}$")
     password: str = Field(min_length=8)
     venue_name: str
-    venue_slug: str = Field(pattern=r"^[a-z0-9-]{3,40}$")
-    bank_name: str = ""
+    bank_name: str
     bank_account_no: str = ""
     bank_account_holder: str = ""
 
+    @field_validator("bank_name")
+    @classmethod
+    def bank_name_must_be_known(cls, v: str) -> str:
+        if v not in KOREAN_BANKS:
+            raise ValueError(f"Unknown bank: {v}")
+        return v
+
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    username: str
     password: str
 
 
@@ -50,6 +57,13 @@ class VenueUpdate(BaseModel):
     bank_name: str | None = None
     bank_account_no: str | None = None
     bank_account_holder: str | None = None
+
+    @field_validator("bank_name")
+    @classmethod
+    def bank_name_must_be_known(cls, v: str | None) -> str | None:
+        if v is not None and v not in KOREAN_BANKS:
+            raise ValueError(f"Unknown bank: {v}")
+        return v
 
 
 # ---- Tables ----

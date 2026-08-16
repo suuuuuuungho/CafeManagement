@@ -1,23 +1,33 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ApiError } from "../lib/api";
+import { api, ApiError } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { DotGridBackground } from "../components/DotGridBackground";
 
 export function Signup() {
   const { signup } = useAuth();
   const navigate = useNavigate();
+  const [banks, setBanks] = useState<string[]>([]);
   const [form, setForm] = useState({
-    email: "",
+    username: "",
     password: "",
     venue_name: "",
-    venue_slug: "",
     bank_name: "",
     bank_account_no: "",
     bank_account_holder: "",
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    api
+      .get<string[]>("/api/meta/banks")
+      .then((list) => {
+        setBanks(list);
+        setForm((f) => (f.bank_name ? f : { ...f, bank_name: list[0] ?? "" }));
+      })
+      .catch(() => {});
+  }, []);
 
   function set<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -50,12 +60,13 @@ export function Signup() {
         </div>
 
         <label className="flex flex-col gap-1">
-          <span className="text-label-caps text-on-surface-variant">이메일</span>
+          <span className="text-label-caps text-on-surface-variant">아이디 (영문/숫자/밑줄, 4~20자)</span>
           <input
-            type="email"
+            type="text"
             required
-            value={form.email}
-            onChange={(e) => set("email", e.target.value)}
+            pattern="[a-zA-Z0-9_]{4,20}"
+            value={form.username}
+            onChange={(e) => set("username", e.target.value)}
             className="bg-surface-container-low rounded-lg px-3 py-2 text-body-md outline-none focus:ring-1 focus:ring-primary"
           />
         </label>
@@ -75,23 +86,11 @@ export function Signup() {
         <div className="h-px bg-surface-variant my-2" />
 
         <label className="flex flex-col gap-1">
-          <span className="text-label-caps text-on-surface-variant">업장명</span>
+          <span className="text-label-caps text-on-surface-variant">매장명</span>
           <input
             required
             value={form.venue_name}
             onChange={(e) => set("venue_name", e.target.value)}
-            className="bg-surface-container-low rounded-lg px-3 py-2 text-body-md outline-none focus:ring-1 focus:ring-primary"
-          />
-        </label>
-
-        <label className="flex flex-col gap-1">
-          <span className="text-label-caps text-on-surface-variant">업장 URL (영문 소문자/숫자/하이픈)</span>
-          <input
-            required
-            pattern="[a-z0-9\-]{3,40}"
-            placeholder="hongdae-cafe"
-            value={form.venue_slug}
-            onChange={(e) => set("venue_slug", e.target.value)}
             className="bg-surface-container-low rounded-lg px-3 py-2 text-body-md outline-none focus:ring-1 focus:ring-primary"
           />
         </label>
@@ -102,11 +101,18 @@ export function Signup() {
         <div className="grid grid-cols-2 gap-2">
           <label className="flex flex-col gap-1">
             <span className="text-label-caps text-on-surface-variant">은행명</span>
-            <input
+            <select
+              required
               value={form.bank_name}
               onChange={(e) => set("bank_name", e.target.value)}
               className="bg-surface-container-low rounded-lg px-3 py-2 text-body-md outline-none focus:ring-1 focus:ring-primary"
-            />
+            >
+              {banks.map((bank) => (
+                <option key={bank} value={bank}>
+                  {bank}
+                </option>
+              ))}
+            </select>
           </label>
           <label className="flex flex-col gap-1">
             <span className="text-label-caps text-on-surface-variant">예금주</span>

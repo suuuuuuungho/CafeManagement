@@ -1,3 +1,5 @@
+import secrets
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,19 +12,30 @@ from app.schemas import LoginRequest, SignupRequest, TokenResponse
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
+async def generate_unique_slug(db: AsyncSession) -> str:
+    """Venue URL is no longer entered by the owner at signup, so it's
+    generated here instead — random rather than derived from the (often
+    Korean) venue name, which isn't reliably URL-safe.
+    """
+    for _ in range(10):
+        candidate = f"cafe-{secrets.token_hex(3)}"
+        existing = await db.execute(select(Venue).where(Venue.slug == candidate))
+        if existing.scalar_one_or_none() is None:
+            return candidate
+    raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Could not generate a unique venue URL")
+
+
 @router.post("/signup", response_model=TokenResponse)
 async def signup(body: SignupRequest, db: AsyncSession = Depends(get_db)):
-    existing_email = await db.execute(select(User).where(User.email == body.email))
-    if existing_email.scalar_one_or_none():
-        raise HTTPException(status.HTTP_409_CONFLICT, "Email already registered")
+    existing_username = await db.execute(select(User).where(User.username == body.username))
+    if existing_username.scalar_one_or_none():
+        raise HTTPException(status.HTTP_409_CONFLICT, "Username already taken")
 
-    existing_slug = await db.execute(select(Venue).where(Venue.slug == body.venue_slug))
-    if existing_slug.scalar_one_or_none():
-        raise HTTPException(status.HTTP_409_CONFLICT, "Venue URL(slug) already taken")
+    slug = await generate_unique_slug(db)
 
     venue = Venue(
         name=body.venue_name,
-        slug=body.venue_slug,
+        slug=slug,
         bank_name=body.bank_name,
         bank_account_no=body.bank_account_no,
         bank_account_holder=body.bank_account_holder,
@@ -31,7 +44,7 @@ async def signup(body: SignupRequest, db: AsyncSession = Depends(get_db)):
     await db.flush()
 
     user = User(
-        email=body.email,
+        username=body.username,
         password_hash=hash_password(body.password),
         role=UserRole.venue_owner,
         venue_id=venue.id,
@@ -45,10 +58,10 @@ async def signup(body: SignupRequest, db: AsyncSession = Depends(get_db)):
 
 @router.post("/login", response_model=TokenResponse)
 async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.email == body.email))
+    result = await db.execute(select(User).where(User.username == body.username))
     user = result.scalar_one_or_none()
     if user is None or not verify_password(body.password, user.password_hash):
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid email or password")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid username or password")
 
     venue_slug = None
     if user.venue_id:

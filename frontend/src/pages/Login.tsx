@@ -7,7 +7,7 @@ import { DotGridBackground } from "../components/DotGridBackground";
 export function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -17,7 +17,7 @@ export function Login() {
     setError(null);
     setLoading(true);
     try {
-      await login(email, password);
+      await login(username, password);
       navigate("/admin/orders");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "로그인에 실패했습니다");
@@ -39,12 +39,12 @@ export function Login() {
         </div>
 
         <label className="flex flex-col gap-1">
-          <span className="text-label-caps text-on-surface-variant">이메일</span>
+          <span className="text-label-caps text-on-surface-variant">아이디</span>
           <input
-            type="email"
+            type="text"
             required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             className="bg-surface-container-low rounded-lg px-3 py-2 text-body-md outline-none focus:ring-1 focus:ring-primary"
           />
         </label>

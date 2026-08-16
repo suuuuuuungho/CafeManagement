@@ -23,7 +23,7 @@ venv/Scripts/python -m uvicorn app.main:app --reload --port 8000
 super_admin 계정은 회원가입 화면으로 만들 수 없습니다 (의도적). 별도 생성:
 
 ```bash
-venv/Scripts/python -m scripts.create_super_admin admin@example.com <password>
+venv/Scripts/python -m scripts.create_super_admin admin <password>
 ```
 
 ### 프론트엔드

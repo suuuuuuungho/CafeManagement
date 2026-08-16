@@ -9,13 +9,12 @@ interface AuthState {
 }
 
 interface AuthContextValue extends AuthState {
-  login: (email: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<void>;
   signup: (body: {
-    email: string;
+    username: string;
     password: string;
     venue_name: string;
-    venue_slug: string;
-    bank_name?: string;
+    bank_name: string;
     bank_account_no?: string;
     bank_account_holder?: string;
   }) => Promise<void>;
@@ -43,8 +42,8 @@ function persist(res: TokenResponse) {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>(readInitialState);
 
-  async function login(email: string, password: string) {
-    const res = await api.post<TokenResponse>("/api/auth/login", { email, password });
+  async function login(username: string, password: string) {
+    const res = await api.post<TokenResponse>("/api/auth/login", { username, password });
     persist(res);
     setState({ token: res.access_token, role: res.role, venueId: res.venue_id, venueSlug: res.venue_slug });
   }

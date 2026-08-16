@@ -6,12 +6,17 @@ import { useActiveVenue, venueQuery } from "../lib/activeVenue";
 export function AdminSettings() {
   const { venueId } = useActiveVenue();
   const [venue, setVenue] = useState<Venue | null>(null);
+  const [banks, setBanks] = useState<string[]>([]);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if (!venueId) return;
     api.get<Venue>(`/api/admin/venue${venueQuery(venueId)}`).then(setVenue).catch(() => {});
   }, [venueId]);
+
+  useEffect(() => {
+    api.get<string[]>("/api/meta/banks").then(setBanks).catch(() => {});
+  }, []);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -41,7 +46,7 @@ export function AdminSettings() {
         className="max-w-lg bg-surface-container-lowest rounded-xl shadow-sm p-padding-card flex flex-col gap-stack-md"
       >
         <label className="flex flex-col gap-1">
-          <span className="text-label-caps text-on-surface-variant">업장명</span>
+          <span className="text-label-caps text-on-surface-variant">매장명</span>
           <input
             value={venue.name}
             onChange={(e) => setVenue({ ...venue, name: e.target.value })}
@@ -51,11 +56,20 @@ export function AdminSettings() {
         <div className="grid grid-cols-2 gap-2">
           <label className="flex flex-col gap-1">
             <span className="text-label-caps text-on-surface-variant">은행명</span>
-            <input
+            <select
               value={venue.bank_name}
               onChange={(e) => setVenue({ ...venue, bank_name: e.target.value })}
               className="bg-surface-container-low rounded-lg px-3 py-2 text-body-md outline-none"
-            />
+            >
+              {!banks.includes(venue.bank_name) && venue.bank_name && (
+                <option value={venue.bank_name}>{venue.bank_name}</option>
+              )}
+              {banks.map((bank) => (
+                <option key={bank} value={bank}>
+                  {bank}
+                </option>
+              ))}
+            </select>
           </label>
           <label className="flex flex-col gap-1">
             <span className="text-label-caps text-on-surface-variant">예금주</span>

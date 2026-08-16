@@ -26,6 +26,7 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(venues.router)
+app.include_router(venues.meta_router)
 app.include_router(tables.router)
 app.include_router(menu.router)
 app.include_router(orders.router)
