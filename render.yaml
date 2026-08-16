@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: cafe-management-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      # Neon connection string, scheme swapped to postgresql+asyncpg://
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_EXPIRE_MINUTES
+        value: "10080"
+      # GitHub Pages origin(s), comma-separated if more than one
+      - key: CORS_ORIGINS
+        sync: false
+      - key: DEPOSIT_MATCH_WINDOW_MINUTES
+        value: "30"
