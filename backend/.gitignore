@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.pyc
+.env
+cafe.db
+qr_out/
